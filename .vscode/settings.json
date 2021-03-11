@@ -1,0 +1,22 @@
+{
+    "workbench.colorCustomizations": {
+        "titleBar.activeForeground": "#000",
+        "titleBar.inactiveForeground": "#000000CC",
+        "titleBar.activeBackground": "#00B7FF",
+        "titleBar.inactiveBackground": "#00c3ffcc",
+        "Atom One Dark": {
+            "titleBar.activeBackground": "#191919cc",
+            "titleBar.activeForeground": "#ffffff"
+        }
+    },
+    // Set the default
+    "editor.formatOnSave": false,
+    // Enable per-language
+    "[javascript]": {
+        "editor.formatOnSave": true
+    },
+    "editor.codeActionsOnSave": {
+        // For ESLint
+        "source.fixAll.eslint": true
+    }
+}
