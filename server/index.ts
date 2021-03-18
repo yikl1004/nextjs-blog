@@ -1,15 +1,17 @@
-import { createSecureServer, createServer } from 'http2';
+import { createSecureServer } from 'http2';
+import { createServer } from 'http';
 import fs from 'fs';
 import next from 'next';
 import express from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-// import expressSession from 'express-session';
+import expressSession from 'express-session';
 import dotenv from 'dotenv';
 
 const dev = process.env.NODE_ENV !== 'production';
-const PORT = 3060;
 // const prod = process.env.NODE_ENV === 'production';
+const PORT1 = 80;
+const PORT2 = 3000;
 
 dotenv.config();
 
@@ -30,31 +32,39 @@ app.prepare().then(() => {
 	server.use(express.urlencoded({ extended: true }));
 	server.use(cookieParser(process.env.COOKIE_SECRET));
 	server.use((req, res, next) => {
+		console.log(1111);
 		if (!req.secure) {
-			res.redirect(`https://localhost:${PORT}${req.url}`);
+			res.redirect(`https://localhost:${PORT2}${req.url}`);
 		} else {
 			next();
 		}
 	});
-	// server.use(
-	// 	expressSession({
-	// 		resave: false,
-	// 		saveUninitialized: false,
-	// 		secret: process.env.COOKIE_SECRET || '',
-	// 		cookie: {
-	// 			httpOnly: true,
-	// 			secure: false,
-	// 		},
-	// 	})
-	// );
+	server.use(
+		expressSession({
+			resave: false,
+			saveUninitialized: false,
+			secret: process.env.COOKIE_SECRET || '',
+			cookie: {
+				httpOnly: true,
+				secure: false,
+			},
+		})
+	);
 
-	createSecureServer(httpsOptions, (req, res) => {
+	server;
+	// createServer((req, res) => {
+	// 	const parsedUrl = new URL(req.url || '', `https://localhost:${PORT2}`);
+
+	// }).listen(PORT2, () => {
+	// 	console.log(`> Ready on http://localhost:${PORT2}`);
+	// });
+
+	createSecureServer(httpsOptions, server, (req, res) => {
 		const parsedUrl = new URL(req.url || '', 'https://localhost:3060');
-		console.log(parsedUrl.protocol, req.method, parsedUrl.pathname);
 		// @ts-ignore
 		handle(req, res, parsedUrl);
-	}).listen(PORT, () => {
+	}).listen(PORT1, () => {
 		console.log('running ssl');
-		console.log(`next + express running on port ${PORT}`);
+		console.log(`next + express running on port ${PORT1}`);
 	});
 });
