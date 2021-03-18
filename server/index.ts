@@ -1,5 +1,5 @@
-import { createSecureServer } from 'http2';
-import { createServer } from 'http';
+import https from 'https';
+import http from 'http';
 import fs from 'fs';
 import next from 'next';
 import express from 'express';
@@ -8,15 +8,20 @@ import cookieParser from 'cookie-parser';
 import expressSession from 'express-session';
 import dotenv from 'dotenv';
 
+// eslint-disable-next-line
+// const redirector = require('redirect-https');
+
 const dev = process.env.NODE_ENV !== 'production';
 // const prod = process.env.NODE_ENV === 'production';
 const PORT1 = 80;
-const PORT2 = 3000;
+const PORT2 = 3030;
+const HOST = dev ? 'localhost' : '';
 
 dotenv.config();
 
 const app = next({
 	dev,
+	customServer: true,
 });
 const handle = app.getRequestHandler();
 const httpsOptions = {
@@ -32,13 +37,20 @@ app.prepare().then(() => {
 	server.use(express.urlencoded({ extended: true }));
 	server.use(cookieParser(process.env.COOKIE_SECRET));
 	server.use((req, res, next) => {
-		console.log(1111);
 		if (!req.secure) {
-			res.redirect(`https://localhost:${PORT2}${req.url}`);
+			res.redirect(`https://${HOST}:${PORT1}${req.url}`);
 		} else {
 			next();
 		}
 	});
+
+	server.all('*', (req, res) => {
+		const parsedUrl = new URL(req.url || '', 'https://localhost:3030');
+
+		//@ts-ignore
+		return handle(req, res, parsedUrl);
+	});
+
 	server.use(
 		expressSession({
 			resave: false,
@@ -51,20 +63,6 @@ app.prepare().then(() => {
 		})
 	);
 
-	server;
-	// createServer((req, res) => {
-	// 	const parsedUrl = new URL(req.url || '', `https://localhost:${PORT2}`);
-
-	// }).listen(PORT2, () => {
-	// 	console.log(`> Ready on http://localhost:${PORT2}`);
-	// });
-
-	createSecureServer(httpsOptions, server, (req, res) => {
-		const parsedUrl = new URL(req.url || '', 'https://localhost:3060');
-		// @ts-ignore
-		handle(req, res, parsedUrl);
-	}).listen(PORT1, () => {
-		console.log('running ssl');
-		console.log(`next + express running on port ${PORT1}`);
-	});
+	https.createServer(httpsOptions, server).listen(PORT1);
+	http.createServer(server).listen(PORT2);
 });
