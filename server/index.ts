@@ -47,7 +47,7 @@ app.prepare().then(() => {
 	server.all('*', (req, res) => {
 		const parsedUrl = new URL(req.url || '', 'https://localhost:3030');
 
-		//@ts-ignore
+		// @ts-ignore
 		return handle(req, res, parsedUrl);
 	});
 
